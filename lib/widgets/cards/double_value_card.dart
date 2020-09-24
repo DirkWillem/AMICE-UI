@@ -24,6 +24,12 @@ class DoubleValueCard extends StatelessWidget {
     return Card(
         child: InkWell(
           onTap: onTap,
+          onLongPress: () {
+            print('long press');
+          },
+          onDoubleTap: () {
+            print('dtab');
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
             child: Column(

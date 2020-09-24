@@ -4,12 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 
 
-class CellVoltagesDialog extends StatefulWidget {
+class EraCellVoltagesDialog extends StatefulWidget {
   @override
-  _CellVoltagesDialogState createState() => _CellVoltagesDialogState();
+  _EraCellVoltagesDialogState createState() => _EraCellVoltagesDialogState();
 }
 
-class _CellVoltagesDialogState extends State<CellVoltagesDialog> {
+class _EraCellVoltagesDialogState extends State<EraCellVoltagesDialog> {
   @override
   void initState() {
     super.initState();
@@ -40,6 +40,18 @@ class _CellVoltagesDialogState extends State<CellVoltagesDialog> {
 
           final data = snapshot.data.cellData;
 
+          var bars = [data.sat1V, data.sat2V, data.sat3V].map(
+              (data) => charts.BarChart(
+                _createData(data), animate: false,
+                barRendererDecorator: charts.BarLabelDecorator<String>(
+                  insideLabelStyleSpec: charts.TextStyleSpec(color: charts.Color.black),
+                  outsideLabelStyleSpec: charts.TextStyleSpec(color: charts.Color.white),
+                ),
+                vertical: false,
+                domainAxis: charts.OrdinalAxisSpec(),
+              )
+          ).toList();
+
           return ConstrainedBox(
             constraints: BoxConstraints(maxWidth: 600, maxHeight: 400),
             child: DefaultTabController(
@@ -53,40 +65,11 @@ class _CellVoltagesDialogState extends State<CellVoltagesDialog> {
                       Tab(text: "Sat 2"),
                       Tab(text: "Sat 3"),
                     ],
-                    labelColor: Colors.white,
+                    labelColor: Theme.of(context).primaryColor,
+                    indicatorColor: Theme.of(context).primaryColor,
                   ),
                   Expanded(
-                    child: TabBarView(children: [
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 600, maxHeight: 400),
-                        child: charts.BarChart(
-                          _createData(data.sat1V), animate: false,
-                          barRendererDecorator: charts.BarLabelDecorator<String>(
-                            insideLabelStyleSpec: charts.TextStyleSpec(color: charts.Color.black),
-                            outsideLabelStyleSpec: charts.TextStyleSpec(color: charts.Color.white),
-                          ),
-                          vertical: false,
-                        ),
-                      ),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 600, maxHeight: 400),
-                        child: charts.BarChart(
-                          _createData(data.sat2V), animate: false,
-                          barRendererDecorator: charts.BarLabelDecorator<String>(
-                          ),
-                          vertical: false,
-                        ),
-                      ),
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 600, maxHeight: 400),
-                        child: charts.BarChart(
-                          _createData(data.sat3V), animate: false,
-                          barRendererDecorator: charts.BarLabelDecorator<String>(
-                          ),
-                          vertical: false,
-                        ),
-                      ),
-                    ]),
+                    child: TabBarView(children: bars),
                   )
                 ],
               ),

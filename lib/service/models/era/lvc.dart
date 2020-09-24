@@ -39,6 +39,18 @@ class LVCVehicleState {
   }
 }
 
+class LVCData {
+  final LVCVehicleState state;
+
+  LVCData({ this.state });
+
+  LVCData update({ LVCVehicleState newState }) {
+    return LVCData(
+      state: newState ?? state
+    );
+  }
+}
+
 class _LVCStateEnumDef extends EnumDef<LVCState> {
   _LVCStateEnumDef()
       : super(UnderlyingType.u8, [
@@ -65,7 +77,7 @@ class _LVCStateEnumDef extends EnumDef<LVCState> {
         ]);
 }
 
-extension _LVCStateName on LVCState {
+extension LVCStateName on LVCState {
   String get name {
     switch (this) {
       case LVCState.initializing:
@@ -125,7 +137,7 @@ class _VehicleStateEnumDef extends EnumDef<VehicleState> {
         ]);
 }
 
-extension _VehicleStateName on VehicleState {
+extension VehicleStateName on VehicleState {
   String get name {
     switch (this) {
       case VehicleState.standby:
@@ -142,6 +154,25 @@ extension _VehicleStateName on VehicleState {
         return 'ESS';
       case VehicleState.externalCharging:
         return 'External Charging';
+    }
+  }
+
+  String get shortName {
+    switch (this) {
+      case VehicleState.standby:
+        return 'Standby';
+      case VehicleState.demo:
+        return 'Demo';
+      case VehicleState.auto:
+        return 'Auto';
+      case VehicleState.drive:
+        return 'Drive';
+      case VehicleState.wsc:
+        return 'WSC';
+      case VehicleState.ess:
+        return 'ESS';
+      case VehicleState.externalCharging:
+        return 'Ext. Ch.';
     }
   }
 }

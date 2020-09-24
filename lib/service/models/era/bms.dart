@@ -104,9 +104,9 @@ class MinMaxCellV {
     return MinMaxCellV(
       minCellV: d.big.decodeU16(0),
       maxCellV: d.big.decodeU16(2),
-      minCellNum: d.decodeU8(3),
-      maxCellNum: d.decodeU8(4),
-      maxNonAdjBalCellV: d.big.decodeU16(5),
+      minCellNum: d.decodeU8(4),
+      maxCellNum: d.decodeU8(5),
+      maxNonAdjBalCellV: d.big.decodeU16(6),
     );
   }
 }
@@ -123,8 +123,8 @@ class MinMaxCellT {
     return MinMaxCellT(
       minCellT: d.big.decodeS16(0),
       maxCellT: d.big.decodeS16(2),
-      minCellNum: d.decodeU8(3),
-      maxCellNum: d.decodeU8(4),
+      minCellNum: d.decodeU8(4),
+      maxCellNum: d.decodeU8(5),
     );
   }
 }
@@ -212,7 +212,7 @@ class CellData {
     return CellData(
       sat1V: List.generate(12, (i) => d.big.decodeU16(i*2)),
       sat2V: List.generate(12, (i) => d.big.decodeU16(24+i*2)),
-      sat3V: List.generate(12, (i) => d.big.decodeU16(48+i*3)),
+      sat3V: List.generate(12, (i) => d.big.decodeU16(48+i*2)),
       sat1T: List.generate(6, (i) => d.decodeS8(72+i)),
       sat2T: List.generate(6, (i) => d.decodeS8(80+i)),
       sat3T: List.generate(6, (i) => d.decodeS8(88+i)),
@@ -387,8 +387,8 @@ extension BMSErrorName on BMSError {
       case BMSError.ivtocs:
         return 'IVTOCS';
       case BMSError.satFault:
-        return 'Sat fault';
       case BMSError.satInternalFault:
+        return 'Sat fault';
       case BMSError.satPCBOT:
         return 'Sat OT';
       case BMSError.negContAuxMismatch:
@@ -408,10 +408,10 @@ extension BMSErrorName on BMSError {
         return 'IMD not OK';
       case BMSError.satStartupTimeout:
       case BMSError.satCommLoss:
-        return 'Sat fault';
+        return 'Sat comm fault';
       case BMSError.ivtStartupTimeout:
       case BMSError.ivtCommLoss:
-        return 'IVT fault';
+        return 'IVT comm fault';
       case BMSError.contError:
         return 'Cont fault';
       case BMSError.prechargeTimeout:

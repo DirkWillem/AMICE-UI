@@ -1,10 +1,15 @@
+import 'package:amice/pages/era_battery_page.dart';
+import 'package:amice/pages/era_global_page.dart';
 import 'package:amice/pages/page_base.dart';
 import 'package:amice/service/bloc/era_bloc.dart';
 import 'package:amice/service/models/era/era.dart';
 import 'package:amice/widgets/cards/double_value_card.dart';
 import 'package:amice/widgets/cards/gauge_card.dart';
 import 'package:amice/widgets/cards/single_value_card.dart';
-import 'package:amice/widgets/dialogs/cell_voltages_dialog.dart';
+import 'package:amice/widgets/dialogs/amice_status_dialog.dart';
+import 'package:amice/widgets/dialogs/era_cell_temperatures_dialog.dart';
+import 'package:amice/widgets/dialogs/era_cell_voltages_dialog.dart';
+import 'package:amice/widgets/dialogs/wiki_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:charts_flutter/flutter.dart' as charts;
 
@@ -84,6 +89,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  int pageIndex = 1;
+  Widget page = EraBatteryPage();
+
   void _incrementCounter() {
     setState(() {
       // This call to setState tells the Flutter framework that something has
@@ -109,6 +117,18 @@ class _MyHomePageState extends State<MyHomePage> {
     EraBloc.getInstance().cancelPeriodicBatteryInfo();
   }
 
+  void navigate(int index) {
+    setState(() {
+      pageIndex = index;
+
+      switch (index) {
+        case 0: page = EraGlobalPage(); break;
+        case 1: page = EraBatteryPage(); break;
+        default: page = EraGlobalPage(); break;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -122,165 +142,36 @@ class _MyHomePageState extends State<MyHomePage> {
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
         title: Text('Stella Era'),
+        actions: [
+          IconButton(icon: Icon(Icons.settings_ethernet), onPressed: () {
+            showDialog(context: context, builder: (BuildContext context) {
+              return AmiceStatusDialog();
+            });
+          })
+        ]
       ),
-//      body: Center(
-//        // Center is a layout widget. It takes a single child and positions it
-//        // in the middle of the parent.
-//        child: Column(
-//          // Column is also a layout widget. It takes a list of children and
-//          // arranges them vertically. By default, it sizes itself to fit its
-//          // children horizontally, and tries to be as tall as its parent.
-//          //
-//          // Invoke "debug painting" (press "p" in the console, choose the
-//          // "Toggle Debug Paint" action from the Flutter Inspector in Android
-//          // Studio, or the "Toggle Debug Paint" command in Visual Studio Code)
-//          // to see the wireframe for each widget.
-//          //
-//          // Column has various properties to control how it sizes itself and
-//          // how it positions its children. Here we use mainAxisAlignment to
-//          // center the children vertically; the main axis here is the vertical
-//          // axis because Columns are vertical (the cross axis would be
-//          // horizontal).
-//          mainAxisAlignment: MainAxisAlignment.center,
-//          children: <Widget>[
-//            Card(
-//              child: SizedBox(
-//                height: 300,
-//                child: charts.PieChart(_createSampleData(context),
-//                    animate: false,
-//                    // Configure the width of the pie slices to 30px. The remaining space in
-//                    // the chart will be left as a hole in the center. Adjust the start
-//                    // angle and the arc length of the pie so it resembles a gauge.
-//                    defaultRenderer: new charts.ArcRendererConfig(
-//                        arcWidth: 30, startAngle: 4 / 5 * 3.14, arcLength: 7 / 5 * 3.14))
-//              ),
-//            ),
-//            Text(
-//              'You have pushed the button this many times:',
-//            ),
-//            Text(
-//              '$_counter',
-//              style: Theme.of(context).textTheme.headline4,
-//            ),
-//          ],
-//        ),
-//      ),
       body: Row(
         children: [
           NavigationRail(
-            selectedIndex: 1,
+            selectedIndex: pageIndex,
             labelType: NavigationRailLabelType.all,
             selectedLabelTextStyle: TextStyle(color: Colors.white),
             destinations: [
-              NavigationRailDestination(icon: Icon(Icons.directions_car_outlined), selectedIcon: Icon(Icons.battery_full, color: Theme.of(context).primaryColor), label: Text('Vehicle')),
-              NavigationRailDestination(icon: Icon(Icons.battery_full_outlined), selectedIcon: Icon(Icons.battery_full, color: Theme.of(context).primaryColor), label: Text('Battery')),
+              NavigationRailDestination(icon: Icon(Icons.directions_car_outlined), selectedIcon: Icon(Icons.directions_car, color: Theme.of(context).primaryColor), label: Text('Vehicle')),
+              NavigationRailDestination(icon: Icon(Icons.battery_std_outlined), selectedIcon: Icon(Icons.battery_full), label: Text('Battery')),
               NavigationRailDestination(icon: Icon(Icons.ev_station_outlined), label: Text('Charging')),
+              NavigationRailDestination(icon: Icon(Icons.speed), label: Text('DT')),
+              NavigationRailDestination(icon: Icon(Icons.book), label: Text('Wiki')),
             ],
+            onDestinationSelected: navigate,
+            selectedIconTheme: IconThemeData(color: Theme.of(context).primaryColor),
           ),
           VerticalDivider(thickness: 1, width: 1),
           Expanded(
-            child: PageBase([
-              Tile(
-//          builder: (BuildContext context) => SingleValueCard(
-//              title: "BMS State", icon: Icons.settings_applications, value: "ESS"),
-                builder: (BuildContext context) => StreamBuilder(
-                    stream: EraBloc.getInstance().bms,
-                    builder: (BuildContext context, AsyncSnapshot<BMSData> snapshot) {
-                      if (snapshot.hasData) {
-                        var state = snapshot.data.state;
-                        if (state.error == BMSError.none) {
-                          return SingleValueCard(
-                            title: "BMS State",
-                            icon: Icons.settings_applications,
-                            value: snapshot.data.state.state.name,
-                          );
-                        } else {
-                          return DoubleValueCard(
-                            title: "BMS State",
-                            icon: Icons.settings_applications,
-                            label1: "State",
-                            value1: state.state.name,
-                            label2: "Error",
-                            value2: state.error.shortName,
-                          );
-                        }
-
-                      }
-                      return Container();
-                    }),
-                rowspan: 1,
-                colspan: 1,
-              ),
-              Tile(
-                builder: (BuildContext context) => StreamBuilder(
-                    stream: EraBloc.getInstance().bms,
-                    builder: (BuildContext context, AsyncSnapshot<BMSData> snapshot) {
-                      if (snapshot.hasData) {
-                        return GaugeCard(
-                          title: "State of Charge",
-                          icon: Icons.battery_std,
-                          value: snapshot.data.condition.soc,
-                          maxValue: 100,
-                          formatter: (v) => '${v.toStringAsFixed(1)}%',
-                        );
-                      } else {
-                        return Container();
-                      }
-                    }),
-                rowspan: 1,
-                colspan: 1,
-              ),
-              Tile(
-                builder: (BuildContext context) => StreamBuilder(
-                    stream: EraBloc.getInstance().bms,
-                    builder: (BuildContext context, AsyncSnapshot<BMSData> snapshot) {
-                      if (snapshot.hasData) {
-                        return DoubleValueCard(
-                            title: "Cell Voltages",
-                            icon: Icons.battery_charging_full,
-                            label1: "Min",
-                            value1: "${(snapshot.data.cellV.minCellV / 1000.0).toStringAsFixed(3)} V",
-                            label2: "Max",
-                            value2: "${(snapshot.data.cellV.maxCellV / 1000.0).toStringAsFixed(3)} V",
-                            onTap: () {
-                              showDialog(context: context, builder: (BuildContext context) {
-                                return CellVoltagesDialog();
-                              });
-                            });
-                      }
-                      return Container();
-                    }),
-                rowspan: 1,
-                colspan: 1,
-              ),
-            ]),
+            child: page,
           ),
         ],
       ),
     );
-  }
-
-  /// Create one series with sample hard coded data.
-  static List<charts.Series<GaugeSegment, String>> _createSampleData(
-      BuildContext context) {
-    final data = [
-      new GaugeSegment('Low', 75),
-      new GaugeSegment('Acceptable', 100),
-      new GaugeSegment('High', 50),
-      new GaugeSegment('Highly Unusual', 5),
-    ];
-
-    return [
-      new charts.Series<GaugeSegment, String>(
-        id: 'Segments',
-        domainFn: (GaugeSegment segment, _) => segment.segment,
-        measureFn: (GaugeSegment segment, _) => segment.size,
-        data: data,
-        seriesColor:
-            charts.ColorUtil.fromDartColor(Theme.of(context).primaryColor),
-        colorFn: (_1, _2) =>
-            charts.ColorUtil.fromDartColor(Theme.of(context).primaryColor),
-      )
-    ];
   }
 }
